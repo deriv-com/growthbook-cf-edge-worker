@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@growthbook/edge-cloudflare": "^0.1.13",
-    "cookie": "^0.6.0",
+    "cookie": "^0.7.0",
     "uuid": "^10.0.0"
   }
 }
