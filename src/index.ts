@@ -9,7 +9,19 @@ export interface Env {
 }
 export default {
 	fetch: async function (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const fullDomain = new URL(request.url).hostname;
+		// Parse the original URL
+		const originalUrl = new URL(request.url);
+
+		// Check if the 'fromWorker' param is already present
+		if (!originalUrl.searchParams.has('fromWorker')) {
+			// Append the 'fromWorker=true' query parameter
+			originalUrl.searchParams.set('fromWorker', 'true');
+		}
+
+		// Modify the request to include the new URL with 'fromWorker' query param
+		const modifiedRequest = new Request(originalUrl.toString(), request);
+
+		const fullDomain = originalUrl.hostname;
 
 		// Extract the main domain by removing the subdomain if present
 		const domainParts = fullDomain.split('.');
@@ -26,7 +38,7 @@ export default {
 		let eventsCache: { name: string, properties: { experimentId: string, variationId: number } }[] = [];
 		let device_type = "";
 		let client_information = "";
-		let clients_country: string = request.cf?.country as string;
+		const country = new String(request.cf?.country).toLocaleLowerCase();
 		let website_status = "";
 		let user_language = "";
 		let device_language = "";
@@ -49,9 +61,14 @@ export default {
 			REQ_HEADERS[RUDDER_ANNONYMOUS_ID_COOKIE_NAME] ??
 			uuidv4();
 		// Create a new GrowthBook instance and handle the request
-		let response = await handleRequest(request, env, {
+		let response = await handleRequest(modifiedRequest, env, {
 			apiHost: env.GROWTHBOOK_API_HOST,
 			clientKey: env.GROWTHBOOK_CLIENT_KEY,
+			// routes: [
+			// 	{ pattern: "staging.deriv.com/([a-z]{3,})/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+			// 	{ pattern: "staging.deriv.com/([a-z]{2}|zh-cn|zh-tw)/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+			// 	{ pattern: "staging.deriv.com/eu/([a-z]{2}|zh-cn|zh-tw)/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+			// ],
 			enableStreaming: true,
 			edgeTrackingCallback: async (experiment, results) => {
 				// Handle tracking events if needed
@@ -62,14 +79,13 @@ export default {
 					}
 				});
 			},
-
 			attributes: {
 				id: anonymousId,
-				url: request.url,
+				url: modifiedRequest.url,
 				is_authorised: !!client_information,
 				loggedIn: !!client_information,
 				...(device_type && { device_type }),
-				...(clients_country && { clients_country }),
+				...(country && { country }),
 				...(user_language && { user_language }),
 				...(device_language && { device_language }),
 				...(utm_data?.utm_source && { utm_source: utm_data.utm_source }),
