@@ -1,0 +1,69 @@
+name: Deploy Cloudflare Worker
+
+on:
+  # Allows manual triggering from the GitHub Actions tab with environment selection
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment (staging, production, development)'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+          - development
+
+jobs:
+  deploy-wrangler:
+    name: Deploy to Cloudflare
+    environment: ${{ inputs.environment }} # Dynamically set the environment based on input
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      
+      - name: NPM install
+        run: npm install
+
+      - name: Create wrangler.toml file
+        # Load environment-specific secrets dynamically
+        env:
+          PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
+          GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
+          GROWTHBOOK_CLIENT_KEY: ${{ secrets.GROWTHBOOK_CLIENT_KEY }}
+          GROWTHBOOK_API_HOST: ${{ secrets.GROWTHBOOK_API_HOST }}
+          KV_BINDING: ${{ secrets.KV_BINDING }}
+          KV_ID: ${{ secrets.KV_ID }}
+          ROUTE: ${{ secrets.ROUTE }}
+          COMPATIBILITY_DATE: '2024-09-09'
+        run: |
+          echo "Creating wrangler.toml file for environment: ${{ inputs.environment }}"
+
+          cat <<EOF > wrangler.toml
+          #:schema node_modules/wrangler/config-schema.json
+          name = "deriv-com-experiments"
+          main = "src/index.ts"
+          compatibility_date = "${COMPATIBILITY_DATE}"
+          compatibility_flags = ["nodejs_compat"]
+
+          [env.${{ inputs.environment }}]
+          vars = {ENVIRONMENT = "${{ inputs.environment }}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
+          route = "${ROUTE}"
+          kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
+          EOF
+
+      - name: Display wrangler.toml file
+        run: cat wrangler.toml
+
+      - name: Publish to Cloudflare with Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Publishing to Cloudflare using Wrangler..."
+          wrangler deploy --env ${{ inputs.environment }}
