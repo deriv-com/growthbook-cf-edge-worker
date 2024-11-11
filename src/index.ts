@@ -11,7 +11,6 @@ export default {
 	fetch: async function (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		// Parse the original URL
 		const originalUrl = new URL(request.url);
-
 		// Check if the 'fromWorker' param is already present
 		if (!originalUrl.searchParams.has('fromWorker')) {
 			// Append the 'fromWorker=true' query parameter
@@ -64,11 +63,14 @@ export default {
 		let response = await handleRequest(modifiedRequest, env, {
 			apiHost: env.GROWTHBOOK_API_HOST,
 			clientKey: env.GROWTHBOOK_CLIENT_KEY,
-			// routes: [
-			// 	{ pattern: "staging.deriv.com/([a-z]{3,})/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-			// 	{ pattern: "staging.deriv.com/([a-z]{2}|zh-cn|zh-tw)/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-			// 	{ pattern: "staging.deriv.com/eu/([a-z]{2}|zh-cn|zh-tw)/.*", type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-			// ],
+			decryptionKey: env.GROWTHBOOK_DECRYPTION_KEY,
+			routes: [
+				{ pattern: `${fullDomain}/([a-z]{3,})(/.{1,})?`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/.{1,}`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/eu/.{1,}`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
+				{ pattern: `^${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/$`, type: "regex", "behavior": "intercept", "includeFileExtensions": false },
+				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/eu`, type: "regex", "behavior": "intercept", "includeFileExtensions": false },
+			],
 			enableStreaming: true,
 			edgeTrackingCallback: async (experiment, results) => {
 				// Handle tracking events if needed
