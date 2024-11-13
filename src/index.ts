@@ -65,11 +65,11 @@ export default {
 			clientKey: env.GROWTHBOOK_CLIENT_KEY,
 			decryptionKey: env.GROWTHBOOK_DECRYPTION_KEY,
 			routes: [
-				{ pattern: `${fullDomain}/([a-z]{3,})(/.{1,})?`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/.{1,}`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/eu/.{1,}`, type: "regex", "behavior": "proxy", "includeFileExtensions": false },
-				{ pattern: `^${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/$`, type: "regex", "behavior": "intercept", "includeFileExtensions": false },
-				{ pattern: `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/eu`, type: "regex", "behavior": "intercept", "includeFileExtensions": false },
+				{ "pattern": `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/eu/[a-z0-9-]{1,}`, "type": "regex", "behavior": "proxy" },
+				{ "pattern": `${fullDomain}/([a-z]{2}|zh-cn|zh-tw)/[a-z0-9-]{3,}`, "type": "regex", "behavior": "proxy" },
+				{ "pattern": `${fullDomain}/[a-z]{3,}/[a-z0-9-]]{1,}`, "type": "regex", "behavior": "proxy" },
+				{ "pattern": `${fullDomain}/[a-z]{3,}`, "type": "regex", "behavior": "proxy" },
+				{ "pattern": `${fullDomain}/(zh-cn|zh-tw)`, "type": "regex", "behavior": "intercept" },
 			],
 			enableStreaming: true,
 			edgeTrackingCallback: async (experiment, results) => {
