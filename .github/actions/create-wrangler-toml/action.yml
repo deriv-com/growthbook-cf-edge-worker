@@ -26,6 +26,10 @@ inputs:
   ROUTE:
     description: 'The route of the worker'
     required: true
+  COMPATIBILITY_DATE:
+    description: 'The compatibility date for the worker'
+    required: true
+    default: '2024-09-09'
 
 runs:
     using: composite
@@ -41,7 +45,7 @@ runs:
           KV_ID: ${{ inputs.KV_ID }}
           ROUTE: ${{ inputs.ROUTE }}
           ENVIRONMENT: ${{ inputs.environment }}
-          COMPATIBILITY_DATE: '2024-09-09'
+          COMPATIBILITY_DATE: ${{ inputs.COMPATIBILITY_DATE }}
         run: |
           echo "Creating wrangler.toml file for environment: ${ENVIRONMENT}"
 
