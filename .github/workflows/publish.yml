@@ -32,7 +32,7 @@ jobs:
         run: npm install
 
       - name: Create wrangler.toml file
-        uses: ./actions/create-wrangler-toml
+        uses: ./.github/actions/create-wrangler-toml
         with:
           PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
           GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
@@ -67,7 +67,7 @@ jobs:
         run: npm install
 
       - name: Create wrangler.toml file
-        uses: ./actions/create-wrangler-toml
+        uses: ./.github/actions/create-wrangler-toml
         with:
           PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
           GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
@@ -102,7 +102,7 @@ jobs:
         run: npm install
 
       - name: Create wrangler.toml file
-        uses: ./actions/create-wrangler-toml
+        uses: ./.github/actions/create-wrangler-toml
         with:
           PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
           GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}

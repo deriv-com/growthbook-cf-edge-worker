@@ -5,45 +5,33 @@ inputs:
   environment:
     description: 'Select the environment (staging, production, development)'
     required: true
-    default: 'staging'
-    type: choice
-    options:
-      - staging
-      - production
-      - development
   PROXY_TARGET:
     description: 'The URL of the proxy target'
     required: true
-    type: string
   GROWTHBOOK_DECRYPTION_KEY:
     description: 'The GrowthBook decryption key'
     required: true
-    type: string
   GROWTHBOOK_CLIENT_KEY:
     description: 'The GrowthBook client key'
     required: true
-    type: string
   GROWTHBOOK_API_HOST:
     description: 'The GrowthBook API host'
     required: true
-    type: string
-    KV_BINDING:
+  KV_BINDING:
     description: 'The binding of the KV namespace'
     required: false
-    type: string
   KV_ID:
     description: 'The ID of the KV namespace'
     required: false
-    type: string
-    ROUTE:
+  ROUTE:
     description: 'The route of the worker'
     required: true
-    type: string
 
 runs:
     using: composite
     steps:
       - name: Create wrangler.toml file
+        shell: bash
         env:
           PROXY_TARGET: ${{ inputs.PROXY_TARGET }}
           GROWTHBOOK_DECRYPTION_KEY: ${{ inputs.GROWTHBOOK_DECRYPTION_KEY }}
@@ -71,4 +59,5 @@ runs:
           EOF
 
       - name: Display wrangler.toml file
+        shell: bash
         run: cat wrangler.toml
