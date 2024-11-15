@@ -52,9 +52,10 @@ runs:
           KV_BINDING: ${{ inputs.KV_BINDING }}
           KV_ID: ${{ inputs.KV_ID }}
           ROUTE: ${{ inputs.ROUTE }}
+          ENVIRONMENT: ${{ inputs.environment }}
           COMPATIBILITY_DATE: '2024-09-09'
         run: |
-          echo "Creating wrangler.toml file for environment: ${{ inputs.environment }}"
+          echo "Creating wrangler.toml file for environment: ${ENVIRONMENT}"
 
           cat <<EOF > wrangler.toml
           #:schema node_modules/wrangler/config-schema.json
@@ -63,8 +64,8 @@ runs:
           compatibility_date = "${COMPATIBILITY_DATE}"
           compatibility_flags = ["nodejs_compat"]
 
-          [env.${{ inputs.environment }}]
-          vars = {ENVIRONMENT = "${{ inputs.environment }}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
+          [env.${ENVIRONMENT}]
+          vars = {ENVIRONMENT = "${ENVIRONMENT}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
           route = "${ROUTE}"
           kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
           EOF
