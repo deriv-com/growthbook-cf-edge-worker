@@ -15,9 +15,10 @@ on:
           - development
 
 jobs:
-  deploy-wrangler:
-    name: Deploy to Cloudflare
-    environment: ${{ inputs.environment }} # Dynamically set the environment based on input
+  deploy-to-cloudflare-production:
+    name: Deploy to Cloudflare Production
+    if: github.event.inputs.environment == 'production'
+    environment: Production
     runs-on: ubuntu-latest
 
     steps:
@@ -26,13 +27,13 @@ jobs:
 
       - name: Install Wrangler
         run: npm install -g wrangler
-      
+
       - name: NPM install
         run: npm install
 
       - name: Create wrangler.toml file
-        # Load environment-specific secrets dynamically
-        env:
+        uses: ./actions/create-wrangler-toml
+        with:
           PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
           GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
           GROWTHBOOK_CLIENT_KEY: ${{ secrets.GROWTHBOOK_CLIENT_KEY }}
@@ -41,29 +42,80 @@ jobs:
           KV_ID: ${{ secrets.KV_ID }}
           ROUTE: ${{ secrets.ROUTE }}
           COMPATIBILITY_DATE: '2024-09-09'
-        run: |
-          echo "Creating wrangler.toml file for environment: ${{ inputs.environment }}"
-
-          cat <<EOF > wrangler.toml
-          #:schema node_modules/wrangler/config-schema.json
-          name = "deriv-com-experiments"
-          main = "src/index.ts"
-          compatibility_date = "${COMPATIBILITY_DATE}"
-          compatibility_flags = ["nodejs_compat"]
-
-          [env.${{ inputs.environment }}]
-          vars = {ENVIRONMENT = "${{ inputs.environment }}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
-          route = "${ROUTE}"
-          kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
-          EOF
-
-      - name: Display wrangler.toml file
-        run: cat wrangler.toml
-
       - name: Publish to Cloudflare with Wrangler
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           echo "Publishing to Cloudflare using Wrangler..."
-          wrangler deploy --env ${{ inputs.environment }}
+          wrangler deploy --env production
+
+  deploy-to-cloudflare-staging:
+    name: Deploy to Cloudflare Staging
+    if: github.event.inputs.environment == 'staging'
+    environment: Staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: NPM install
+        run: npm install
+
+      - name: Create wrangler.toml file
+        uses: ./actions/create-wrangler-toml
+        with:
+          PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
+          GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
+          GROWTHBOOK_CLIENT_KEY: ${{ secrets.GROWTHBOOK_CLIENT_KEY }}
+          GROWTHBOOK_API_HOST: ${{ secrets.GROWTHBOOK_API_HOST }}
+          KV_BINDING: ${{ secrets.KV_BINDING }}
+          KV_ID: ${{ secrets.KV_ID }}
+          ROUTE: ${{ secrets.ROUTE }}
+          COMPATIBILITY_DATE: '2024-09-09'
+      - name: Publish to Cloudflare with Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Publishing to Cloudflare using Wrangler..."
+          wrangler deploy --env staging
+
+  deploy-to-cloudflare-development:
+    name: Deploy to Cloudflare Development
+    if: github.event.inputs.environment == 'development'
+    environment: Development
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: NPM install
+        run: npm install
+
+      - name: Create wrangler.toml file
+        uses: ./actions/create-wrangler-toml
+        with:
+          PROXY_TARGET: ${{ secrets.PROXY_TARGET }}
+          GROWTHBOOK_DECRYPTION_KEY: ${{ secrets.GROWTHBOOK_DECRYPTION_KEY }}
+          GROWTHBOOK_CLIENT_KEY: ${{ secrets.GROWTHBOOK_CLIENT_KEY }}
+          GROWTHBOOK_API_HOST: ${{ secrets.GROWTHBOOK_API_HOST }}
+          KV_BINDING: ${{ secrets.KV_BINDING }}
+          KV_ID: ${{ secrets.KV_ID }}
+          ROUTE: ${{ secrets.ROUTE }}
+          COMPATIBILITY_DATE: '2024-09-09'
+      - name: Publish to Cloudflare with Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Publishing to Cloudflare using Wrangler..."
+          wrangler deploy --env development

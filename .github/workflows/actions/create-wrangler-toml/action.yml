@@ -1,0 +1,73 @@
+name: Create Wrangler.toml file
+description: Create a Wrangler.toml file for a specific environment
+
+inputs:
+  environment:
+    description: 'Select the environment (staging, production, development)'
+    required: true
+    default: 'staging'
+    type: choice
+    options:
+      - staging
+      - production
+      - development
+  PROXY_TARGET:
+    description: 'The URL of the proxy target'
+    required: true
+    type: string
+  GROWTHBOOK_DECRYPTION_KEY:
+    description: 'The GrowthBook decryption key'
+    required: true
+    type: string
+  GROWTHBOOK_CLIENT_KEY:
+    description: 'The GrowthBook client key'
+    required: true
+    type: string
+  GROWTHBOOK_API_HOST:
+    description: 'The GrowthBook API host'
+    required: true
+    type: string
+    KV_BINDING:
+    description: 'The binding of the KV namespace'
+    required: false
+    type: string
+  KV_ID:
+    description: 'The ID of the KV namespace'
+    required: false
+    type: string
+    ROUTE:
+    description: 'The route of the worker'
+    required: true
+    type: string
+
+runs:
+    using: composite
+    steps:
+      - name: Create wrangler.toml file
+        env:
+          PROXY_TARGET: ${{ inputs.PROXY_TARGET }}
+          GROWTHBOOK_DECRYPTION_KEY: ${{ inputs.GROWTHBOOK_DECRYPTION_KEY }}
+          GROWTHBOOK_CLIENT_KEY: ${{ inputs.GROWTHBOOK_CLIENT_KEY }}
+          GROWTHBOOK_API_HOST: ${{ inputs.GROWTHBOOK_API_HOST }}
+          KV_BINDING: ${{ inputs.KV_BINDING }}
+          KV_ID: ${{ inputs.KV_ID }}
+          ROUTE: ${{ inputs.ROUTE }}
+          COMPATIBILITY_DATE: '2024-09-09'
+        run: |
+          echo "Creating wrangler.toml file for environment: ${{ inputs.environment }}"
+
+          cat <<EOF > wrangler.toml
+          #:schema node_modules/wrangler/config-schema.json
+          name = "deriv-com-experiments"
+          main = "src/index.ts"
+          compatibility_date = "${COMPATIBILITY_DATE}"
+          compatibility_flags = ["nodejs_compat"]
+
+          [env.${{ inputs.environment }}]
+          vars = {ENVIRONMENT = "${{ inputs.environment }}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
+          route = "${ROUTE}"
+          kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
+          EOF
+
+      - name: Display wrangler.toml file
+        run: cat wrangler.toml
