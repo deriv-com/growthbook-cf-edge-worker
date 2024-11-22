@@ -8,9 +8,6 @@ inputs:
   PROXY_TARGET:
     description: 'The URL of the proxy target'
     required: true
-  GROWTHBOOK_DECRYPTION_KEY:
-    description: 'The GrowthBook decryption key'
-    required: true
   GROWTHBOOK_CLIENT_KEY:
     description: 'The GrowthBook client key'
     required: true
@@ -38,7 +35,6 @@ runs:
         shell: bash
         env:
           PROXY_TARGET: ${{ inputs.PROXY_TARGET }}
-          GROWTHBOOK_DECRYPTION_KEY: ${{ inputs.GROWTHBOOK_DECRYPTION_KEY }}
           GROWTHBOOK_CLIENT_KEY: ${{ inputs.GROWTHBOOK_CLIENT_KEY }}
           GROWTHBOOK_API_HOST: ${{ inputs.GROWTHBOOK_API_HOST }}
           KV_BINDING: ${{ inputs.KV_BINDING }}
@@ -57,10 +53,14 @@ runs:
           compatibility_flags = ["nodejs_compat"]
 
           [env.${ENVIRONMENT}]
-          vars = {ENVIRONMENT = "${ENVIRONMENT}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_DECRYPTION_KEY = "${GROWTHBOOK_DECRYPTION_KEY}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
+          vars = {ENVIRONMENT = "${ENVIRONMENT}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
           route = "${ROUTE}"
           kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
           EOF
+          # Conditionally append kv_namespaces if KV_BINDING is present
+          if [ -n "${KV_BINDING}" ]; then
+            echo "  kv_namespaces = [{ binding = \"${KV_BINDING}\", id = \"${KV_ID}\" }]" >> wrangler.toml
+          fi
 
       - name: Display wrangler.toml file
         shell: bash
