@@ -40,6 +40,7 @@ jobs:
           KV_BINDING: ${{ secrets.KV_BINDING }}
           KV_ID: ${{ secrets.KV_ID }}
           ROUTE: ${{ vars.ROUTE }}
+          ENVIRONMENT: production
           COMPATIBILITY_DATE: '2024-09-09'
       - name: Publish to Cloudflare with Wrangler
         env:
@@ -72,6 +73,7 @@ jobs:
           GROWTHBOOK_CLIENT_KEY: ${{ vars.GROWTHBOOK_CLIENT_KEY }}
           GROWTHBOOK_API_HOST: ${{ vars.GROWTHBOOK_API_HOST }}
           ROUTE: ${{ secrets.ROUTE }}
+          ENVIRONMENT: staging
           COMPATIBILITY_DATE: '2024-09-09'
       - name: Publish to Cloudflare with Wrangler
         env:
@@ -104,6 +106,7 @@ jobs:
           GROWTHBOOK_CLIENT_KEY: ${{ vars.GROWTHBOOK_CLIENT_KEY }}
           GROWTHBOOK_API_HOST: ${{ vars.GROWTHBOOK_API_HOST }}
           ROUTE: ${{ vars.ROUTE }}
+          ENVIRONMENT: dev
           COMPATIBILITY_DATE: '2024-09-09'
       - name: Publish to Cloudflare with Wrangler
         env:
