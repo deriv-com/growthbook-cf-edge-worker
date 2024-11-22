@@ -55,7 +55,6 @@ runs:
           [env.${ENVIRONMENT}]
           vars = {ENVIRONMENT = "${ENVIRONMENT}", PROXY_TARGET = "${PROXY_TARGET}", GROWTHBOOK_CLIENT_KEY = "${GROWTHBOOK_CLIENT_KEY}", GROWTHBOOK_API_HOST = "${GROWTHBOOK_API_HOST}"}
           route = "${ROUTE}"
-          kv_namespaces = [{ binding = "${KV_BINDING}", id = "${KV_ID}" }]
           EOF
           # Conditionally append kv_namespaces if KV_BINDING is present
           if [ -n "${KV_BINDING}" ]; then
